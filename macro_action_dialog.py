@@ -114,23 +114,50 @@ class ActionInputDialog(QDialog):
         self.action_type_combo.blockSignals(False)
 
     def update_ui_for_action_type(self):
-        while self.form_layout.rowCount() > 0: self.form_layout.removeRow(0)
-        current_action_type = self.action_type_combo.currentText()
-        # 모든 타입별 위젯을 일단 숨김 (레이아웃에서 제거된 상태이므로 addRow 시 다시 나타남)
-        # 또는 각 위젯의 setVisible(False)를 먼저 호출할 수도 있음
-        if current_action_type == "마우스 클릭":
-            self.form_layout.addRow("X 좌표:", self.mouse_x_input); self.form_layout.addRow("Y 좌표:", self.mouse_y_input)
-            self.form_layout.addRow("버튼:", self.mouse_button_combo); self.form_layout.addRow(self.capture_coords_button)
-        elif current_action_type == "키보드 입력":
-            self.form_layout.addRow("캡처된 키:", self.captured_key_display); self.form_layout.addRow(self.capture_key_button)
-        elif current_action_type == "딜레이":
+        # 1) 레이아웃에서 모든 위젯 분리하고 숨기기
+        for i in reversed(range(self.form_layout.count())):
+            item = self.form_layout.itemAt(i)
+            w = item.widget()
+            if w:
+                self.form_layout.removeWidget(w)
+                w.hide()
+
+        # 2) 액션 유형에 맞게 행 추가 및 위젯 보이기
+        current = self.action_type_combo.currentText()
+        if current == "마우스 클릭":
+            self.form_layout.addRow("X 좌표:", self.mouse_x_input)
+            self.form_layout.addRow("Y 좌표:", self.mouse_y_input)
+            self.form_layout.addRow("버튼:", self.mouse_button_combo)
+            self.form_layout.addRow(self.capture_coords_button)
+            for w in (self.mouse_x_input, self.mouse_y_input, self.mouse_button_combo, self.capture_coords_button):
+                w.show()
+
+        elif current == "키보드 입력":
+            self.form_layout.addRow("캡처된 키:", self.captured_key_display)
+            self.form_layout.addRow(self.capture_key_button)
+            for w in (self.captured_key_display, self.capture_key_button):
+                w.show()
+
+        elif current == "딜레이":
             self.form_layout.addRow("대기 시간 (ms):", self.delay_input_ms)
-        elif current_action_type == "색 찾기 후 클릭":
-            self.form_layout.addRow(self.color_capture_button); self.form_layout.addRow(self.captured_color_display)
-            self.form_layout.addRow(self.captured_pos_display); self.form_layout.addRow(QLabel("--- 검색 범위 (좌상단 XY, 우하단 XY) ---"))
-            self.form_layout.addRow("X1:", self.search_x1_input); self.form_layout.addRow("Y1:", self.search_y1_input)
-            self.form_layout.addRow("X2:", self.search_x2_input); self.form_layout.addRow("Y2:", self.search_y2_input)
+            self.delay_input_ms.show()
+
+        elif current == "색 찾기 후 클릭":
+            self.form_layout.addRow(self.color_capture_button)
+            self.form_layout.addRow(self.captured_color_display)
+            self.form_layout.addRow(self.captured_pos_display)
+            self.form_layout.addRow(QLabel("--- 검색 범위 (좌상단 XY, 우하단 XY) ---"))
+            self.form_layout.addRow("X1:", self.search_x1_input)
+            self.form_layout.addRow("Y1:", self.search_y1_input)
+            self.form_layout.addRow("X2:", self.search_x2_input)
+            self.form_layout.addRow("Y2:", self.search_y2_input)
             self.form_layout.addRow(self.define_search_area_button)
+            for w in (self.color_capture_button, self.captured_color_display,
+                      self.captured_pos_display, self.search_x1_input,
+                      self.search_y1_input, self.search_x2_input,
+                      self.search_y2_input, self.define_search_area_button):
+                w.show()
+
 
     def _is_any_capture_active(self): # 이전과 동일
         return self.is_magnifier_capture_active or \
